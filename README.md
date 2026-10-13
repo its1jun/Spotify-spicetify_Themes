@@ -1,4 +1,4 @@
-#Spicetify Theme
+# Spicetify Theme
 ### 설치 방법
 1. Uptodown 등에서 원하는 버전(예: 1.2.81.107) 설치
 2. SpotX 설치
@@ -10,8 +10,8 @@
    ```
    text
    ```
-6. 테마 삽입
-   ```위치
+6. 테마 삽입 위치
+   ```
    %appdata%\spicetify\Themes\
    ```
 8. 테마 적용
