@@ -1,0 +1,131 @@
+/* MyBlurTheme 스타일 파일. 구역 순서: 1.변수 2.배경 레이어 3.패널 투명화 4.배경 변수 투명화 5.가사 화면 */
+
+/* ================= 1. 변수 (바꿀 값은 여기에서만 고친다) ================= */
+:root {
+  --blur-bg-blur: 20px; /* 블러 강도 (클수록 더 흐림) */
+  --blur-bg-darkness: 0.45; /* 배경 어둡기 (0=원본, 1=완전 검정) */
+  --blur-bg-fallback-color: #000000; /* 아트워크가 없을 때 쓰는 바탕색 */
+}
+
+/* ================= 2. 배경 레이어 ================= */
+html {
+  background-color: var(--blur-bg-fallback-color);
+}
+
+/* theme.js가 만드는 배경 div: 화면 전체에 고정, 모든 요소 뒤에 깔림 */
+#blur-bg-layer {
+  position: fixed;
+  /* 블러하면 가장자리가 비어 보이므로 화면보다 크게 깐다 */
+  inset: calc(var(--blur-bg-blur) * -2);
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--blur-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(var(--blur-bg-blur)) brightness(calc(1 - var(--blur-bg-darkness)));
+}
+
+/* ================= 3. 패널 투명화 ================= */
+/* Spotify 업데이트 후 투명하지 않은 곳이 생기면 이 목록을 가장 먼저 확인한다.
+   해시 클래스(알 수 없는 영문자 이름)는 업데이트 때 바뀔 수 있다. */
+html body .Root,
+html body .Root__top-container,
+html body .Root__nav-bar,
+html body .main-yourLibraryX-libraryContainer,
+html body .main-yourLibraryX-entryPoints,
+html body .Root__main-view,
+html body .main-view-container,
+html body .main-view-container__scroll-node-child,
+html body .Root__right-sidebar,
+html body .Root__right-sidebar-peek,
+html body .NowPlayingView,
+html body .main-nowPlayingView-mainWrapper,
+html body .Root__now-playing-bar,
+html body .main-nowPlayingBar-container,
+html body .main-topBar-container,
+html body .main-topBar-background,
+html body .main-topBar-overlay,
+html body .Root__globalNav,
+html body .main-entityHeader-backgroundColor,
+html body .main-entityHeader-container,
+html body .main-actionBarBackground-background,
+html body .main-actionBar-ActionBar,
+html body .main-home-homeHeader,
+html body .main-shelf-shelf,
+html body .playlist-playlist-playlistContent,
+html body .playlist-playlist-page,
+html body .playlist-playlist-actionBarBackground-background,
+html body .main-card-card,
+html body .main-cardImage-imageWrapper,
+html body .main-card-cardContainer,
+html body .VideoPlayer__container,
+/* 해시 클래스 */
+html body .GQZWDj0xGPg_0Q25WEyf,
+html body .dqwQhIudKoD98eWJzj5E,
+html body .idQcRYCjAFYbKngo13bt,
+html body .P91StDUW8iiKx4vRlEpx,
+html body .v7l8R2LqTiqpLnip84fM,
+html body .AkrmHC49uQapjEACH2z6,
+html body .YXN5e0W2_7VDt0qjFy9j,
+html body .xCn72QlawF3rgUNijaKJ,
+html body .VKv1u39Lc1DBu7olBi25,
+html body .m1DrWVgP1LyVYDjOJa3u,
+html body .yg4z06j1tCC5lPXUOo15,
+html body .hqGLFzSrjnZOk4cccjCA,
+html body .MSusW7bkDuhSoe4hl4df,
+html body .Av8efGMw19TSieracH_o,
+html body .DHUbRMCrYDNQOCkI1XXT,
+html body .M7ECcaA17LC8UqL2GKVD,
+html body .nKG1AO0XDj1Uf2rbGZ17,
+html body .aootSWAMFtKUssqBUpkH,
+html body ._HWgfn12qv5CiGI4Vf5F,
+html body .v5XWJBSI4f2F3uDiF9Kc,
+html body .AYf7zWhdGt7ITWHHtF9j,
+html body .MOiFCv8s28_7q_Jxyt8F,
+html body .omoOEuqXZVFMSqf9tONQ,
+html body .qQWFj6qNlK0UyHisXumx,
+html body .EUJVBvHdIVLdTaMk7_Ed {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* ================= 4. 패널 안쪽 요소의 기본 배경 변수 투명화 ================= */
+/* 패널 안에서만 적용한다. (모든 요소에 걸면 재생 버튼 같은 버튼 배경까지 투명해진다) */
+html body .Root,
+html body .Root__top-container,
+html body .Root__nav-bar,
+html body .Root__main-view,
+html body .Root__right-sidebar,
+html body .main-view-container,
+html body .main-nowPlayingView-mainWrapper {
+  --background-base: transparent !important;
+  --background-elevated-base: transparent !important;
+  --background-highlight: transparent !important;
+  --background-press: transparent !important;
+  --background-tinted-base: transparent !important;
+  --background-tinted-highlight: transparent !important;
+  --background-tinted-press: transparent !important;
+}
+
+/* ================= 5. 가사 화면 + 전역 배경 변수 투명화 ================= */
+/* Spotify가 각 요소에 직접 --background-base를 지정하기 때문에, 4구역(패널 단위)만으로는 부족하다.
+   그래서 모든 요소에 건다. 대신 6구역에서 불투명해야 하는 버튼을 복구한다. */
+html body * {
+  --lyrics-color-background: transparent !important;
+  --lyrics-color-background-base: transparent !important;
+  --background-base: transparent !important;
+}
+
+/* ================= 6. 예외: 투명하면 안 되는 요소 ================= */
+/* 재생 버튼의 흰색 동그라미 (하단 재생바 등) */
+html body .encore-inverted-light-set {
+  --background-base: #ffffff !important;
+}
+
+/* 재생 버튼의 초록 동그라미 (아티스트/플레이리스트/앨범 화면, 카드 위 재생 버튼) */
+html body .encore-bright-accent-set,
+html body [data-testid="play-button"],
+html body .main-playButton-PlayButton {
+  --background-base: #1ed760 !important;
+}
