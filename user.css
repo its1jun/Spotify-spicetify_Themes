@@ -1,10 +1,34 @@
-/* ==========================================================================
-   전체 투명 & 예외 처리
-   1. 전역 투명 (모든 것을 지운다)
-   2. 예외 복구 (되살릴 것만 css-map.json 이름 기반으로)
-   ========================================================================== */
+/* ============================================================
+   user.css — Spotify(Spicetify) 투명 테마
 
-/* ================= 1. 전역 투명 ================= */
+   방침: 전역 투명으로 모든 배경을 지운 뒤, 필요한 요소만 예외로 되살린다.
+
+   theme.js와 이름으로 연결되는 항목 (한쪽만 바꾸면 깨짐)
+     #blur-bg-layer, --blur-bg-image          배경 레이어 / 아트워크 이미지
+     --text-bright-accent                     배경에서 추출한 강조색
+     #custom-wc, html.custom-wc-active        커스텀 창 컨트롤
+     #custom-header-clone, .is-on             고정 헤더 복사본
+     --custom-mask-cut, --custom-mask-strength  스크롤 마스크 (JS가 갱신)
+     #custom-loading-screen, .custom-loading-logo, .fade-out,
+     --custom-loading-image                   로딩 화면
+
+   목차
+     1. 전역 투명
+     2. 변수
+     3. 배경 레이어
+     4. 커스텀 창 컨트롤
+     5. 패널 / 툴팁 / 메뉴
+     6. 재생 컨트롤
+     7. 스크롤 마스크 / 고정 헤더
+     8. 로딩 화면
+     9. 가사 화면
+     10. 리스트 로우 투명화
+   ============================================================ */
+
+
+/* ============================================================
+   1. 전역 투명
+   ============================================================ */
 *,
 *::before,
 *::after {
@@ -14,14 +38,17 @@
   border-color: transparent !important;
 }
 
-/* ==========================================================================
+
+/* ============================================================
    2. 변수
-   ========================================================================== */
+   ============================================================ */
 :root {
+  /* 배경 블러 */
   --blur-bg-blur: 20px;
-  --blur-bg-darkness: 0.45;
+  --blur-bg-darkness: 0.45; /* 0~1, 클수록 어두움 */
   --blur-bg-fallback-color: #000000;
 
+  /* 창 컨트롤 */
   --custom-wc-top: 8px;
   --custom-wc-right: 8px;
   --custom-wc-padding-x: 6px;
@@ -34,24 +61,44 @@
   --custom-wc-close-bg-hover: #e81123;
   --custom-wc-transition: 0.22s ease-out;
 
-  --custom-highlight-color: #ffffff1a;
+  /* 패널 / 툴팁 / 메뉴 */
+  --custom-panel-alpha: 0; /* 0~1, 클수록 진함 */
+  --custom-panel-bg: rgba(0, 0, 0, var(--custom-panel-alpha));
+  --custom-panel-blur: 6px;
+  --custom-panel-radius: 12px;
+
+  /* 재생 컨트롤 */
+  --custom-play-button-radius: 50%; /* 50%면 원형 */
+  --custom-progress-track-bg: var(--spice-misc);
+  --custom-progress-fill-bg: var(--text-bright-accent);
+
+  /* 스크롤 마스크: 탑바 높이 (이 구간은 곡이 안 보임) */
+  --custom-top-cut: 64px;
+
+  /* 스포티파이 내부 초록색 변수를 추출한 강조색에 연결 */
+  --spice-button: var(--text-bright-accent) !important;
+  --spice-button-active: var(--text-bright-accent) !important;
+  --spice-highlight: var(--text-bright-accent) !important;
+  --background-bright-accent: var(--text-bright-accent) !important;
+  --essential-bright-accent: var(--text-bright-accent) !important;
+  --decorative-subdued: var(--text-bright-accent) !important;
 }
 
-/* ==========================================================================
+
+/* ============================================================
    3. 배경 레이어 (theme.js가 만드는 #blur-bg-layer)
-   전역 투명보다 뒤에 있어야 살아남는다 → html body 접두어로 명시도 확보
-   ========================================================================== */
+   ============================================================ */
 html {
   background-color: var(--blur-bg-fallback-color);
 }
 
 html body #blur-bg-layer {
   position: fixed !important;
-  inset: calc(var(--blur-bg-blur) * -2) !important;
+  inset: calc(var(--blur-bg-blur) * -2) !important; /* 블러 가장자리가 비치지 않게 바깥으로 확장 */
   z-index: -1 !important;
   pointer-events: none !important;
 
-  background-color: transparent !important; /* 배경색은 투명하게 */
+  background-color: transparent !important;
   background-image: var(--blur-bg-image, none) !important;
   background-size: cover !important;
   background-position: center !important;
@@ -61,11 +108,12 @@ html body #blur-bg-layer {
   opacity: 1 !important;
 }
 
-/* ==========================================================================
+
+/* ============================================================
    4. 커스텀 창 컨트롤 (theme.js가 만드는 #custom-wc)
-   ========================================================================== */
+   ============================================================ */
 html body #custom-wc {
-  display: none;
+  display: none; /* html.custom-wc-active일 때만 표시 (아래 규칙) */
   position: fixed !important;
   top: var(--custom-wc-top) !important;
   right: var(--custom-wc-right) !important;
@@ -85,7 +133,7 @@ html body #custom-wc {
   app-region: no-drag !important;
   opacity: 1 !important;
 }
-html.custom-wc-active html body #custom-wc,
+
 html.custom-wc-active #custom-wc {
   display: flex !important;
 }
@@ -107,12 +155,15 @@ html body #custom-wc button {
   -webkit-app-region: no-drag !important;
   app-region: no-drag !important;
 }
+
 html body #custom-wc button:hover {
   background: var(--custom-wc-button-bg-hover) !important;
 }
+
 html body #custom-wc button[data-wc="close"]:hover {
   background: var(--custom-wc-close-bg-hover) !important;
 }
+
 html body #custom-wc button svg {
   opacity: 1 !important;
   fill: none !important;
@@ -120,11 +171,373 @@ html body #custom-wc button svg {
   width: 10px !important;
   height: 10px !important;
 }
+
+/* 전체화면에서는 숨김 */
 .spotify__container--is-desktop.fullscreen #custom-wc {
   display: none !important;
 }
 
-/* ==========================================================================
-   5. 예외 복구 (앞으로 하나씩 추가)
-   ========================================================================== */
-/* 여기에 1순위(재생 컨트롤), 2순위(텍스트/아이콘/이미지) ... 순서로 추가 */
+
+/* ============================================================
+   5. 패널 / 툴팁 / 메뉴
+   ============================================================ */
+
+/* 각진 모서리를 둥글게 */
+[data-tippy-root] .tippy-box,
+#context-menu ul[role="menu"],
+.main-contextMenu-menu,
+.main-dropDown-dropDown {
+  border-radius: var(--custom-panel-radius) !important;
+  overflow: hidden !important;
+}
+
+[data-tippy-root] {
+  border-radius: var(--custom-panel-radius) !important;
+}
+
+/* 반투명 배경 + 블러 */
+#context-menu ul[role="menu"],
+#search-dropdown [data-overlayscrollbars-viewport],
+[data-tippy-root],
+dialog::backdrop {
+  background-color: var(--custom-panel-bg) !important;
+  -webkit-backdrop-filter: blur(var(--custom-panel-blur)) !important;
+  backdrop-filter: blur(var(--custom-panel-blur)) !important;
+}
+
+/* 라이브러리 버튼 hover 시 첫 번째 span의 아이콘만 투명하게 */
+html body button[aria-label="Open Your Library"]:hover > span:nth-of-type(1) svg {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease-out !important;
+}
+
+
+/* ============================================================
+   6. 재생 컨트롤
+   ============================================================ */
+
+/* [순서 중요] 아래 세 규칙은 우선순위가 같아서, 뒤에 오는 규칙이 앞 규칙을 덮어쓴다.
+   재생 버튼 복구 → 보조(Tertiary) 버튼 투명 → 사이드바 아이콘 흰색 순서를 유지할 것. */
+
+/* 재생/일시정지 버튼의 원 복구 */
+button[data-testid="control-button-playpause"],
+button[aria-label^="Play "]:not(.main-trackList-rowImagePlayButton),
+button[aria-label^="Pause "]:not(.main-trackList-rowImagePlayButton) {
+  background-color: var(--text-bright-accent, #1ed760) !important;
+  border-radius: var(--custom-play-button-radius) !important;
+  color: #000 !important;
+}
+
+/* 보조(Tertiary) 버튼은 다시 투명 (재생/일시정지 버튼 제외) */
+button[data-encore-id="buttonTertiary"]:not([data-testid="control-button-playpause"]) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* 내 라이브러리 & Queue (사이드바)의 재생 아이콘은 흰색 */
+:is(.Root__nav-bar, .Root__right-sidebar) button[aria-label^="Play "],
+:is(.Root__nav-bar, .Root__right-sidebar) button[aria-label^="Pause "] {
+  color: #fff !important;
+}
+
+:is(.Root__nav-bar, .Root__right-sidebar) button[aria-label^="Play "] :is(svg, path),
+:is(.Root__nav-bar, .Root__right-sidebar) button[aria-label^="Pause "] :is(svg, path) {
+  fill: #fff !important;
+}
+
+/* 재생바 / 볼륨바: 트랙 (바 전체 배경) */
+.playback-progressbar .x-progressBar-progressBarBg,
+[data-testid="playback-progressbar"] .x-progressBar-progressBarBg,
+.volume-bar .x-progressBar-progressBarBg,
+[data-testid="volume-bar"] .x-progressBar-progressBarBg {
+  background-color: var(--custom-progress-track-bg, rgba(255, 255, 255, 0.3)) !important;
+  border-radius: 999px !important;
+}
+
+/* 재생바 / 볼륨바: 채워진 부분 */
+.playback-progressbar .x-progressBar-fillColor,
+[data-testid="playback-progressbar"] .x-progressBar-fillColor,
+.volume-bar .x-progressBar-fillColor,
+[data-testid="volume-bar"] .x-progressBar-fillColor {
+  background-color: var(--custom-progress-fill-bg, #ffffff) !important;
+  border-radius: 999px !important;
+}
+
+/* 재생바 / 볼륨바: 노브 (hover·드래그 시 나타나는 동그라미) */
+.playback-progressbar .progress-bar__slider,
+[data-testid="playback-progressbar"] .progress-bar__slider,
+.volume-bar .progress-bar__slider,
+[data-testid="volume-bar"] .progress-bar__slider {
+  background-color: var(--text-bright-accent, #ffffff) !important;
+  border-radius: 50% !important;
+}
+
+
+/* ============================================================
+   7. 스크롤 마스크 / 고정 헤더
+   ------------------------------------------------------------
+   탑바 / 트랙리스트 헤더 밑으로 지나가는 내용을 마스크로 가린다.
+   --custom-mask-cut      가릴 구간의 높이 (theme.js가 헤더 위치에 맞춰 갱신, 없으면 --custom-top-cut)
+   --custom-mask-strength 마스크 세기 0~1 (theme.js가 탑바 제목 투명도에 맞춰 매 프레임 갱신)
+   ============================================================ */
+html body .main-view-container__scroll-node {
+  --custom-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, calc(1 - var(--custom-mask-strength, 0))) var(--custom-mask-cut, var(--custom-top-cut)),
+    #000 var(--custom-mask-cut, var(--custom-top-cut))
+  );
+  -webkit-mask-image: var(--custom-mask-image) !important;
+  mask-image: var(--custom-mask-image) !important;
+}
+
+/* 제목이 나타나는 만큼 액션 바는 사라진다 (마스크 세기 = 제목 투명도) */
+html body .main-actionBar-ActionBar {
+  opacity: calc(1 - var(--custom-mask-strength, 0)) !important;
+}
+
+/* 고정 헤더 복사본 (theme.js가 만든다) */
+html body #custom-header-clone {
+  position: absolute !important;
+  z-index: 5 !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  display: none;
+}
+
+html body #custom-header-clone.is-on {
+  display: block !important;
+}
+
+
+/* ============================================================
+   8. 로딩 화면 (theme.js가 만드는 #custom-loading-screen)
+   ============================================================ */
+html body #custom-loading-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  background-color: #000000 !important;
+
+  /* 로고를 정중앙에 배치 */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  opacity: 1 !important;
+  transition: opacity 0.5s ease !important;
+  will-change: opacity !important; /* 별도 레이어로 올려, 메인 스레드가 바빠도 페이드가 끊기지 않게 */
+  pointer-events: all !important; /* 로딩 중 클릭 방지 */
+}
+
+html body #custom-loading-screen.fade-out {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+html body #custom-loading-screen .custom-loading-logo {
+  width: 200px !important;     /* 가로 크기 */
+  height: auto !important;     /* 세로는 비율에 맞춰 자동 */
+  max-width: 80vw !important;  /* 작은 화면에서 넘치지 않게 */
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+}
+
+/* ============================================================
+   9. 가사 화면
+   ------------------------------------------------------------
+   현재 줄: 하얀색
+   이전/다음 줄: 스포티파이 기본 색 + 블러(text-shadow) + 투명도
+   ============================================================ */
+:root {
+  --lyric-dim-opacity: 0.65;
+}
+
+/* 현재 줄: 하얀색 */
+[data-lyric-state="current"],
+[data-lyric-state="current"] * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* 이전/다음 줄: 투명도 */
+[data-lyric-state="past"],
+[data-lyric-state="upcoming"] {
+  opacity: var(--lyric-dim-opacity) !important;
+}
+
+/* 이전/다음 줄: 스포티파이 기본 색으로 블러 */
+[data-lyric-state="past"],
+[data-lyric-state="past"] *,
+[data-lyric-state="upcoming"],
+[data-lyric-state="upcoming"] * {
+  color: var(--lyrics-color-inactive) !important;
+  transition: color 0.2s ease-out, opacity 0.2s ease-out !important;
+}
+
+/* ============================================================
+   10. 인라인 배경 변수 무력화
+   ------------------------------------------------------------
+   전역 투명(*)으로 안 지워지는 인라인 배경(style="...")을 지울 때 사용.
+   ============================================================ */
+[data-encore-id="listRow"],
+[data-encore-id="listRow"]:hover,
+[data-encore-id="listRow"] *,
+[data-encore-id="listRow"]:hover *,
+[data-encore-id="listRow"]::before,
+[data-encore-id="listRow"]::after,
+.main-trackList-trackListRow,
+.main-trackList-trackListRow:hover,
+.main-trackList-trackListRow *,
+.main-trackList-trackListRow:hover *,
+.e-10860-legacy-listRow,
+.e-10860-legacy-listRow__on_click,
+.e-10860-legacy-listRow__row_bottom {
+  /* 스포티파이 내부 변수 무력화 */
+  --box-hover-background-color: transparent !important;
+  --background-highlight: transparent !important;
+  --background-elevated-base: transparent !important;
+  --background-tinted-base: transparent !important;
+  --background-tinted-highlight: transparent !important;
+  
+  /* 직접적인 배경 속성 강제 투명화 */
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================
+   11. 우측 '지금 재생 중' 패널 사진 비율 및 좌우 맞춤
+   ============================================================ */
+
+/* 1. 부모의 16px 패딩을 제거하여 영상과 섹션의 시작점을 일치시킴 */
+.main-nowPlayingView-mainWrapper {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 2. 아티스트 섹션 너비를 100%로 맞춤 */
+.main-nowPlayingView-section.main-nowPlayingView-aboutArtist {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+/* 3. 아티스트 사진 요소 너비를 100%로 맞추고, 패딩 영역까지 배경 이미지가 칠해지도록 설정 */
+.main-nowPlayingView-aboutArtist [style*="url("] {
+  width: 100% !important;
+  max-width: 100% !important;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+  background-size: cover !important;
+  background-position: center !important;
+
+  /* Fade Out */
+  -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%) !important;
+  mask-image: linear-gradient(to bottom, black 80%, transparent 100%) !important;
+
+}
+
+/* ============================================================
+   12. 커스텀 미니 플레이어 (PiP) 스타일
+   ============================================================ */
+#custom-pip-panel {
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  background: #222 !important;
+  border-radius: 8px !important;
+  cursor: grab !important;
+}
+#custom-pip-panel:active {
+  cursor: grabbing !important;
+}
+.custom-pip-bg {
+  position: absolute !important; inset: 0 !important;
+  background-size: cover !important;
+  background-position: center !important;
+}
+.custom-pip-overlay {
+  position: absolute !important; inset: 0 !important;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, transparent 100%) !important;
+}
+.custom-pip-ui {
+  position: absolute !important; bottom: 8px !important; left: 12px !important;
+  width: calc(100% - 90px) !important;
+  color: white !important; display: flex !important; flex-direction: column !important; gap: 2px !important;
+  pointer-events: none !important;
+}
+.custom-pip-title {
+  font-size: 13px !important; font-weight: bold !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+}
+.custom-pip-artist {
+  font-size: 10px !important; opacity: 0.7 !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+}
+
+/* [수정 1] 버튼 공통 스타일 (반투명 하얀색) */
+.pip-btn {
+  background: rgba(255, 255, 255, 0.1) !important; /* 반투명 하얀색 */
+  color: #ffffff !important; /* 아이콘 흰색 */
+  border: none !important;
+  width: 20px !important; height: 20px !important; border-radius: 50% !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  cursor: pointer !important; padding: 0 !important; box-sizing: border-box !important;
+}
+.pip-btn svg {
+  width: 12px !important; height: 12px !important; fill: currentColor !important;
+}
+.pip-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* [수정 2] 컨트롤 및 닫기 버튼 컨테이너 (호버 영역 30px 확장) */
+.custom-pip-controls {
+  position: absolute !important; bottom: 6px !important; right: 6px !important;
+  display: flex !important; gap: 4px !important; z-index: 10 !important;
+  opacity: 0 !important; transition: opacity 0.2s !important;
+  
+  /* 버튼 위치는 그대로 두고, 마우스 감지 영역만 사방 30px 확장 */
+  padding: 30px !important;
+  margin: -30px !important;
+  box-sizing: content-box !important;
+}
+.custom-pip-close {
+  position: absolute !important; top: 6px !important; right: 6px !important;
+  z-index: 10 !important; opacity: 0 !important; transition: opacity 0.2s !important;
+}
+
+/* 투명한 가상 요소를 만들어서 호버 영역만 30px씩 넓힘 (동그라미 크기는 그대로 유지) */
+.custom-pip-close::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -30px !important;
+  left: -30px !important;
+  right: -30px !important;
+  bottom: -30px !important;
+}
+
+/* [수정 2] 버튼 주변 30px 영역에 마우스가 들어오면 나타남 */
+.custom-pip-controls:hover,
+.custom-pip-close:hover {
+  opacity: 1 !important;
+}
+
+/* ------------------------------------------------------------
+   로딩 화면 이미지 교체 방법
+   1. 이미지(SVG, PNG, JPG)를 Base64 문자열로 변환한다.
+   2. 아래 --custom-loading-image 의 url('...') 안을 변환한 문자열로 바꾼다.
+        SVG: url('data:image/svg+xml;base64,문자열')
+        PNG: url('data:image/png;base64,문자열')
+        JPG: url('data:image/jpeg;base64,문자열')
+   3. 가로세로 비율이 달라지면 위 .custom-loading-logo 의 width/height도 맞춘다.
+   (한 줄이 매우 길어서 파일 맨 아래에 따로 둔다)
+   ------------------------------------------------------------ */
+:root {
+  --custom-loading-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgNjAiPjxwYXRoIGQ9Ik0yMi4xMjMgMTEuODI4QzEyLjA3IDExLjgyOCAzLjk1MiAxOS45NyAzLjk1MiAzMGMwIDEwLjA1MiA4LjE0IDE4LjE3MiAxOC4xNzIgMTguMTcyIDEwLjA1MiAwIDE4LjE3Mi04LjE0IDE4LjE3Mi0xOC4xNzJzLTguMTQtMTguMTcyLTE4LjE3Mi0xOC4xNzJ6bTguMzM3IDI2LjIyNmMtLjMyNi41NDMtMS4wMi42OTUtMS41NjMuMzctNC4yNzctMi42MDUtOS42NC0zLjE5LTE1Ljk4LTEuNzYtLjYwOC4xMy0xLjIxNi0uMjQtMS4zNDYtLjg0N3MuMjQtMS4yMTYuODQ3LTEuMzQ2YzYuOTI2LTEuNTg1IDEyLjg3NC0uOTEyIDE3LjY1IDIuMDIuNTQzLjMyNi43MTYgMS4wMi4zOSAxLjU2M3ptMi4yMTQtNC45NWMtLjQxMi42NzMtMS4yOC44NjgtMS45NTQuNDc4LTQuODg1LTIuOTk2LTEyLjMzLTMuODY0LTE4LjEwNi0yLjEyOC0uNzYuMjE3LTEuNTQtLjE5NS0xLjc2LS45MzQtLjIxNy0uNzYuMTk1LTEuNTQuOTU1LTEuNzYgNi42LTEuOTk3IDE0LjgwNi0xLjA0MiAyMC40MyAyLjQuNjUuMzkuODQ3IDEuMjYuNDM0IDEuOTMyem0uMTk1LTUuMTY3Yy01Ljg2Mi0zLjQ3NC0xNS41MjMtMy44LTIxLjEyNC0yLjEwNi0uOS4yODItMS44NDUtLjI0LTIuMTI4LTEuMTNzLjI0LTEuODQ1IDEuMTMtMi4xMjhjNi40MjYtMS45NTQgMTcuMTA4LTEuNTYzIDIzLjgzOCAyLjQzMi44MDMuNDc4IDEuMDY0IDEuNTIuNTg2IDIuMzIzLS40MzQuODI1LTEuNDk4IDEuMDg2LTIuMy42MDh6IiBmaWxsPSIjMWVkNzYwIi8+PGcgdHJhbnNmb3JtPSJtYXRyaXgoLjIxMzc1IDAgMCAuMjEzNzUgLjEzODAyOCAxMi42NTU2MDQpIiBmaWxsPSIjMWVkNzYwIj48cGF0aCBkPSJNMjMyLjEgNzguNmMtMTQuNS0zLjQtMTctNS45LTE3LTExIDAtNC44IDQuNS04IDExLjItOCA2LjUgMCAxMyAyLjUgMTkuOCA3LjUuMi4yLjUuMi43LjIuMyAwIC41LS4yLjYtLjRsNy4xLTEwYS45NS45NSAwIDAgMC0uMi0xLjNjLTguMS02LjUtMTcuMi05LjYtMjcuOC05LjYtMTUuNiAwLTI2LjUgOS40LTI2LjUgMjIuOCAwIDE0LjQgOS40IDE5LjUgMjUuNyAyMy40IDEzLjggMy4yIDE2LjIgNS45IDE2LjIgMTAuNiAwIDUuMy00LjcgOC42LTEyLjMgOC42LTguNCAwLTE1LjMtMi44LTIzLTkuNS0uMi0uMi0uNS0uMi0uNy0uMi0uMyAwLS41LjEtLjYuM2wtNy45IDkuNGMtLjMuNC0uMyAxIC4xIDEuMyA5IDggMjAgMTIuMiAzMS45IDEyLjIgMTYuOCAwIDI3LjctOS4yIDI3LjctMjMuNC0uMi0xMi03LjQtMTguNi0yNS0yMi45ek0yOTUgNjQuM2MtNy4zIDAtMTMuMyAyLjktMTguMiA4Ljh2LTYuNmMwLS41LS40LS45LS45LS45SDI2M2MtLjUgMC0uOS40LS45Ljl2NzMuNmMwIC41LjQuOS45LjloMTIuOWMuNSAwIC45LS40LjktLjl2LTIzLjJjNC45IDUuNSAxMC45IDguMiAxOC4yIDguMiAxMy41IDAgMjcuMy0xMC40IDI3LjMtMzAuNC0uMS0xOS45LTEzLjgtMzAuNC0yNy4zLTMwLjR6bTEyLjIgMzAuNGMwIDEwLjItNi4zIDE3LjItMTUuMiAxNy4ycy0xNS41LTcuNC0xNS41LTE3LjIgNi43LTE3LjIgMTUuNS0xNy4yIDE1LjIgNy4yIDE1LjIgMTcuMnptNTAuMi0zMC40Yy0xNy40IDAtMzEuMSAxMy40LTMxLjEgMzAuNiAwIDE3IDEzLjYgMzAuMyAzMC45IDMwLjMgMTcuNSAwIDMxLjItMTMuNCAzMS4yLTMwLjUgMC0xNy0xMy42LTMwLjQtMzEtMzAuNHptMCA0Ny43Yy05LjMgMC0xNi4zLTcuNS0xNi4zLTE3LjMgMC05LjkgNi44LTE3LjEgMTYuMS0xNy4xczE2LjQgNy41IDE2LjQgMTcuNGMtLjEgOS44LTYuOSAxNy0xNi4yIDE3em02OC4yLTQ2LjVoLTE0LjJWNTAuOWMwLS41LS40LS45LS45LS45aC0xMi45Yy0uNSAwLS45LjQtLjkuOXYxNC42aC02LjJjLS41IDAtLjkuNC0uOS45djExLjFjMCAuNS40LjkuOS45aDYuMnYyOC44YzAgMTEuNiA1LjggMTcuNSAxNy4yIDE3LjUgNC42IDAgOC41LTEgMTIuMS0zIC4zLS4yLjUtLjUuNS0uOHYtMTAuNmMwLS4zLS4yLS42LS40LS44LS4zLS4yLS42LS4yLS45IDAtMi41IDEuMy00LjkgMS44LTcuNiAxLjgtNC4yIDAtNi0xLjktNi02LjFWNzguNWgxNC4yYy41IDAgLjktLjQuOS0uOVY2Ni41Yy0uMS0uNi0uNS0xLTEuMS0xem00OS43LjF2LTEuOGMwLTUuMyAyLTcuNiA2LjUtNy42IDIuNyAwIDQuOS41IDcuMyAxLjMuMy4xLjYgMCAuOS0uMS4yLS4yLjQtLjUuNC0uOFY0NS43YzAtLjQtLjMtLjgtLjctLjktMi42LS44LTUuOC0xLjUtMTAuOC0xLjUtMTIgMC0xOC4zIDYuNy0xOC4zIDE5LjV2Mi43aC02LjJjLS41IDAtMSAuNC0xIC45djExLjJjMCAuNS40LjkgMSAuOWg2LjJ2NDQuNGMwIC41LjQuOS45LjloMTIuOWMuNSAwIC45LS40LjktLjlWNzguNWgxMi4xbDE4LjUgNDQuNGMtMi4xIDQuNy00LjIgNS42LTcgNS42LTIuMyAwLTQuNy0uNy03LjEtMi0uMi0uMS0uNS0uMS0uOC0uMS0uMi4xLS41LjMtLjYuNWwtNC40IDkuNmMtLjIuNSAwIDEgLjQgMS4yIDQuNiAyLjUgOC43IDMuNSAxMy44IDMuNSA5LjYgMCAxNC44LTQuNSAxOS41LTE2LjRsMjIuNS01OGMuMS0uMy4xLS42LS4xLS45cy0uNS0uNC0uOC0uNGgtMTMuNWMtLjQgMC0uOC4zLS45LjZsLTEzLjggMzkuNEw0OTggNjZjLS4xLS40LS41LS42LS45LS42aC0yMS44em0tMjguOC0uMWgtMTIuOWMtLjUgMC0uOS40LS45Ljl2NTYuNWMwIC41LjQuOS45LjloMTIuOWMuNSAwIC45LS40LjktLjlWNjYuNWMuMS0uNi0uNC0xLS45LTF6Ii8+PGNpcmNsZSBjeD0iNDQwLjEiIGN5PSI0OS4xIiByPSI5LjMiLz48L2c+PC9zdmc+');
+}
