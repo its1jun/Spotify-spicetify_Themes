@@ -20,4 +20,13 @@
    spicetify config inject_theme_js 1
    spicetify apply
    ```
+---
 
+### Spicetify Themes 위치:
+```
+%AppData%\spicetify\Themes
+```
+### css-map.json 위치:
+```
+%LocalAppData%\spicetify
+```
