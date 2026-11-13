@@ -18,6 +18,8 @@
    ```
    spicetify config current_theme 현재_테마_이름
    spicetify config inject_theme_js 1
+   ```
+   ```
    spicetify apply
    ```
 ---
