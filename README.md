@@ -8,7 +8,7 @@
 4. Spotify 한 번 실행 후 로그인(60초 이상 기다렸다가 종료)
 5. Spicetify 설치
    ```
-   text
+   iwr -useb https://raw.githubusercontent.com/spicetify/cli/main/install.ps1 | iex
    ```
 6. 테마 삽입 위치
    ```
