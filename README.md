@@ -6,7 +6,7 @@
    iex "& { $(iwr -useb 'https://raw.githubusercontent.com/SpotX-Official/SpotX/refs/heads/main/run.ps1') } -new_theme"
    ```
 4. Spotify 한 번 실행 후 로그인(60초 이상 기다렸다가 종료)
-5. Spicetify 설치
+5. Spicetify 설치(PowerShell)
    ```
    iwr -useb https://raw.githubusercontent.com/spicetify/cli/main/install.ps1 | iex
    ```
@@ -14,7 +14,7 @@
    ```
    %appdata%\spicetify\Themes\
    ```
-8. 테마 적용
+8. 테마 적용(PowerShell)
    ```
    spicetify config current_theme 현재_테마_이름
    spicetify config inject_theme_js 1
